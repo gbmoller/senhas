@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Retirada de Senhas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      padding: 20px;
+      text-align: center;
+    }
+    .box {
+      background: #fff;
+      max-width: 420px;
+      margin: auto;
+      padding: 20px;
+      border-radius: 10px;
+    }
+    input, button {
+      width: 95%;
+      padding: 12px;
+      margin-top: 10px;
+      font-size: 16px;
+    }
+    button {
+      background: #1f7a8c;
+      color: white;
+      border: none;
+      border-radius: 6px;
+    }
+    .pref {
+      background: #6a1b9a;
+    }
+    #msg {
+      margin-top: 20px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+
+<body>
+<div class="box">
+  <h2>Retirada de Senhas</h2>
+
+  <input id="nome" placeholder="Nome completo">
+  <input id="cpf" placeholder="CPF (somente números)">
+
+  <button onclick="enviar('N')">Senha Comum</button>
+  <button class="pref" onclick="enviar('P')">Senha Preferencial</button>
+
+  <div id="msg"></div>
+</div>
+
+<script>
+function enviar(tipo) {
+  const nome = nomeInput.value.trim();
+  const cpf  = cpfInput.value.trim();
+  const msg  = document.getElementById("msg");
+
+  msg.innerHTML = "⏳ Aguarde...";
+
+  fetch(https://script.google.com/macros/s/AKfycbxijP6K36ntCundxxtJA8A4c1oHqHsC_2l5q8p-4fuxM4JC5GpH2y_BHWsEJJ-fx7m1/exec
+, {
+    method: "POST",
+    body: JSON.stringify({ nome, cpf, tipo })
+  })
+  .then(r => r.json())
+  .then(res => {
+    if (res.status === "ok") {
+      msg.innerHTML = `
+        <strong>✅ Senha retirada</strong><br>
+        Nome: ${res.nome}<br>
+        Número: ${res.numero}<br>
+        Tipo: ${res.tipo}<br>
+        Código: ${res.codigo}
+      `;
+    } else if (res.status === "cheio") {
+      msg.innerHTML = "❌ As senhas de hoje já se encerraram.";
+    } else if (res.status === "ja_usado") {
+      msg.innerHTML = "⚠️ Este CPF já retirou senha hoje.";
+    } else {
+      msg.innerHTML = "❌ Não foi possível retirar a senha.";
+    }
+  });
+}
+</script>
+</body>
+</html>
