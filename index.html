@@ -12,9 +12,7 @@
       padding: 20px;
       text-align: center;
     }
-<p style="color:red; font-weight:bold;">
-VERSÃO NOVA – 20/12 – SEM BOTÃO DE TESTE
-</p>
+
     .box {
       background: #ffffff;
       max-width: 420px;
@@ -46,10 +44,20 @@ VERSÃO NOVA – 20/12 – SEM BOTÃO DE TESTE
       margin-top: 20px;
       font-size: 16px;
     }
+
+    .versao {
+      color: red;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
   </style>
 </head>
 
 <body>
+
+<p class="versao">
+VERSÃO NOVA – 20/12 – SEM BOTÃO DE TESTE
+</p>
 
 <div class="box">
   <h2>Retirada de Senhas</h2>
@@ -83,9 +91,7 @@ function enviar(tipo) {
 
   fetch("https://script.google.com/macros/s/AKfycbzTjxN-UtK15h3KOVlkuyKi8O3cME-BO6CJ5boNh1bLlG4cHELOXO4Z70E3cRZeOiA9/exec", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ nome, cpf, tipo })
   })
   .then(r => r.json())
@@ -99,19 +105,14 @@ function enviar(tipo) {
         Código: ${res.codigo}<br><br>
         Apresente esta senha na chegada.
       `;
-    } 
-    else if (res.status === "cheio") {
+    } else if (res.status === "cheio") {
       msg.innerHTML = `
         ❌ <strong>As senhas de hoje já se encerraram.</strong><br>
         Agradecemos a compreensão.
       `;
-    } 
-    else if (res.status === "ja_usado") {
-      msg.innerHTML = `
-        ⚠️ Este CPF já retirou uma senha hoje.
-      `;
-    } 
-    else {
+    } else if (res.status === "ja_usado") {
+      msg.innerHTML = "⚠️ Este CPF já retirou uma senha hoje.";
+    } else {
       msg.innerHTML = "❌ Não foi possível gerar a senha.";
     }
   })
