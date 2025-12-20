@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>Teste de Botão</title>
+  <title>Retirada de Senhas</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <style>
@@ -18,7 +18,7 @@
       max-width: 420px;
       margin: auto;
       padding: 20px;
-      border-radius: 10px;
+      border-radius: 12px;
     }
 
     input, button {
@@ -39,24 +39,83 @@
     .pref {
       background: #6a1b9a;
     }
+
+    #msg {
+      margin-top: 20px;
+      font-size: 16px;
+    }
   </style>
 </head>
 
 <body>
 
 <div class="box">
-  <h2>TESTE DE BOTÃO</h2>
+  <h2>Retirada de Senhas</h2>
 
-  <input id="nome" placeholder="Digite qualquer nome">
-  <input id="cpf" placeholder="Digite qualquer CPF">
+  <input id="nome" placeholder="Nome completo">
+  <input id="cpf" placeholder="CPF (somente números)">
 
   <button onclick="enviar('N')">Senha Comum</button>
   <button class="pref" onclick="enviar('P')">Senha Preferencial</button>
+
+  <div id="msg"></div>
 </div>
 
 <script>
 function enviar(tipo) {
-  alert("BOTÃO FUNCIONOU — tipo: " + tipo);
+  const nome = document.getElementById("nome").value.trim();
+  const cpf  = document.getElementById("cpf").value.trim();
+  const msg  = document.getElementById("msg");
+
+  if (!nome || nome.length < 2) {
+    msg.innerHTML = "❌ Por favor, informe seu nome.";
+    return;
+  }
+
+  if (!cpf || cpf.length !== 11) {
+    msg.innerHTML = "❌ Informe um CPF válido (11 números).";
+    return;
+  }
+
+  msg.innerHTML = "⏳ Aguarde, estamos gerando sua senha...";
+
+  fetch("https://script.google.com/macros/s/AKfycbzTjxN-UtK15h3KOVlkuyKi8O3cME-BO6CJ5boNh1bLlG4cHELOXO4Z70E3cRZeOiA9/exec", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ nome, cpf, tipo })
+  })
+  .then(r => r.json())
+  .then(res => {
+    if (res.status === "ok") {
+      msg.innerHTML = `
+        <strong>🎟️ Sua senha foi gerada</strong><br><br>
+        Nome: ${res.nome}<br>
+        Número: ${res.numero}<br>
+        Tipo: ${res.tipo}<br>
+        Código: ${res.codigo}<br><br>
+        Apresente esta senha na chegada.
+      `;
+    } 
+    else if (res.status === "cheio") {
+      msg.innerHTML = `
+        ❌ <strong>As senhas de hoje já se encerraram.</strong><br>
+        Agradecemos a compreensão.
+      `;
+    } 
+    else if (res.status === "ja_usado") {
+      msg.innerHTML = `
+        ⚠️ Este CPF já retirou uma senha hoje.
+      `;
+    } 
+    else {
+      msg.innerHTML = "❌ Não foi possível gerar a senha.";
+    }
+  })
+  .catch(() => {
+    msg.innerHTML = "❌ Erro de conexão. Tente novamente.";
+  });
 }
 </script>
 
