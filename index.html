@@ -69,54 +69,7 @@
 
 <script>
 function enviar(tipo) {
-  const nome = document.getElementById("nome").value.trim();
-  const cpf  = document.getElementById("cpf").value.trim();
-  const msg  = document.getElementById("msg");
-
-  if (!nome || nome.length < 2) {
-    msg.innerHTML = "❌ Por favor, informe seu nome.";
-    return;
-  }
-
-  if (!cpf || cpf.length !== 11) {
-    msg.innerHTML = "❌ Informe um CPF válido (11 números).";
-    return;
-  }
-
-  msg.innerHTML = "⏳ Aguarde, estamos gerando sua senha...";
-
-  fetch("https://script.google.com/macros/s/AKfycbzTjxN-UtK15h3KOVlkuyKi8O3cME-BO6CJ5boNh1bLlG4cHELOXO4Z70E3cRZeOiA9/exec", {
-  method: "POST",
-  body: new URLSearchParams({
-    nome: nome,
-    cpf: cpf,
-    tipo: tipo
-  })
-  .then(r => r.json())
-  .then(res => {
-    if (res.status === "ok") {
-      msg.innerHTML = `
-        <strong>🎟️ Sua senha foi gerada</strong><br><br>
-        Nome: ${res.nome}<br>
-        Número: ${res.numero}<br>
-        Tipo: ${res.tipo}<br>
-        Código: ${res.codigo}<br><br>
-        Apresente esta senha na chegada.
-      `;
-    } else if (res.status === "cheio") {
-      msg.innerHTML = `
-        ❌ <strong>As senhas de hoje já se encerraram.</strong><br>
-        Agradecemos a compreensão.
-      `;
-    } else if (res.status === "ja_usado") {
-      msg.innerHTML = "⚠️ Este CPF já retirou uma senha hoje.";
-    } else {
-      msg.innerHTML = "❌ Não foi possível gerar a senha.";
-    }
-  })
-  .catch(() => {
-    msg.innerHTML = "❌ Erro de conexão. Tente novamente.";
-  });
+  alert("CLIQUE FUNCIONOU – tipo: " + tipo);
 }
 </script>
 
