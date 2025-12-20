@@ -86,9 +86,11 @@ function enviar(tipo) {
   msg.innerHTML = "⏳ Aguarde, estamos gerando sua senha...";
 
   fetch("https://script.google.com/macros/s/AKfycbzTjxN-UtK15h3KOVlkuyKi8O3cME-BO6CJ5boNh1bLlG4cHELOXO4Z70E3cRZeOiA9/exec", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ nome, cpf, tipo })
+  method: "POST",
+  body: new URLSearchParams({
+    nome: nome,
+    cpf: cpf,
+    tipo: tipo
   })
   .then(r => r.json())
   .then(res => {
