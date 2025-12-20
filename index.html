@@ -69,7 +69,16 @@
 
 <script>
 function enviar(tipo) {
-  alert("CLIQUE FUNCIONOU – tipo: " + tipo);
+  fetch("https://script.google.com/macros/s/AKfycbzTjxN-UtK15h3KOVlkuyKi8O3cME-BO6CJ5boNh1bLlG4cHELOXO4Z70E3cRZeOiA9/exec", {
+    method: "POST"
+  })
+  .then(r => r.text())
+  .then(t => {
+    alert("RESPOSTA DO SCRIPT:\n\n" + t);
+  })
+  .catch(() => {
+    alert("ERRO DE CONEXÃO");
+  });
 }
 </script>
 
