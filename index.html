@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -22,6 +23,7 @@
     }
 
     input, button {
+      box-sizing: border-box;
       width: 95%;
       padding: 12px;
       margin-top: 10px;
@@ -36,6 +38,11 @@
       cursor: pointer;
     }
 
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
     .pref {
       background: #6a1b9a;
     }
@@ -43,6 +50,7 @@
     #msg {
       margin-top: 20px;
       font-size: 16px;
+      line-height: 1.5;
     }
 
     .versao {
@@ -58,67 +66,124 @@
 <div class="box">
   <h2>Retirada de Senhas</h2>
 
-  <input id="nome" placeholder="Nome completo">
-  <input id="cpf" placeholder="CPF (somente números)">
+  <!-- Apenas o nome é solicitado -->
+  <input
+    id="nome"
+    type="text"
+    placeholder="Nome completo"
+    autocomplete="name"
+    maxlength="150"
+  >
 
-  <button onclick="enviar('N')">Senha Comum</button>
-  <button class="pref" onclick="enviar('P')">Senha Preferencial</button>
+  <button class="botao-senha" onclick="enviar('N')">
+    Senha Comum
+  </button>
 
-  <div id="msg"></div>
+  <button class="pref botao-senha" onclick="enviar('P')">
+    Senha Preferencial
+  </button>
+
+  <div id="msg" role="status" aria-live="polite"></div>
 </div>
 
 <script>
+const SCRIPT_URL =
+  "https://script.google.com/macros/s/AKfycbyjY2YRaVArdZOVV0-gCmwwcgUD7am6RVfasMIb99nWOKE83LnFbsWl-3-o7KSNX4Fj/exec";
+
+let enviando = false;
+
 function enviar(tipo) {
+  // Impede dois cliques simultâneos na mesma página
+  if (enviando) return;
+
   const nome = document.getElementById("nome").value.trim();
-  const cpf  = document.getElementById("cpf").value.trim();
-  const msg  = document.getElementById("msg");
+  const msg = document.getElementById("msg");
+  const botoes = document.querySelectorAll(".botao-senha");
 
-  if (!nome || nome.length < 2) {
-    msg.innerHTML = "❌ Por favor, informe seu nome.";
+  // Validação apenas do nome
+  if (nome.length < 2) {
+    msg.textContent = "Por favor, informe seu nome.";
     return;
   }
 
-  if (!cpf || cpf.length !== 11) {
-    msg.innerHTML = "❌ Informe um CPF válido (11 números).";
+  if (tipo !== "N" && tipo !== "P") {
+    msg.textContent = "Tipo de senha inválido.";
     return;
   }
 
-  msg.innerHTML = "⏳ Aguarde, estamos gerando sua senha...";
+  enviando = true;
+  botoes.forEach(botao => botao.disabled = true);
 
-  const url = new URL("https://script.google.com/macros/s/AKfycbyjY2YRaVArdZOVV0-gCmwwcgUD7am6RVfasMIb99nWOKE83LnFbsWl-3-o7KSNX4Fj/exec");
+  msg.textContent = "Aguarde, estamos gerando sua senha...";
+
+  // Envia somente nome e tipo, sem CPF
+  const url = new URL(SCRIPT_URL);
   url.searchParams.append("nome", nome);
-  url.searchParams.append("cpf", cpf);
   url.searchParams.append("tipo", tipo);
 
-  fetch(url)
-    .then(response => response.json())
+  fetch(url.toString())
+    .then(response => {
+      if (!response.ok) {
+        throw new Error("Falha na comunicação.");
+      }
+      return response.json();
+    })
     .then(res => {
       if (res.status === "ok") {
-        msg.innerHTML = `
-          <strong>🎟️ Sua senha foi gerada</strong><br><br>
-          Nome: ${res.nome}<br>
-          Número: ${res.numero}<br>
-          Tipo: ${res.tipo}<br>
-          Código: ${res.codigo}<br><br>
-          Apresente esta senha na chegada.
-        `;
+        // Montagem segura do resultado
+        msg.replaceChildren();
+
+        const titulo = document.createElement("strong");
+        titulo.textContent = "Sua senha foi gerada";
+
+        const detalhes = document.createElement("div");
+        detalhes.style.marginTop = "15px";
+
+        const linhas = [
+          ["Nome", res.nome],
+          ["Número", res.numero],
+          ["Tipo", res.tipo],
+          ["Código", res.codigo]
+        ];
+
+        linhas.forEach(([rotulo, valor]) => {
+          const linha = document.createElement("div");
+          linha.textContent = `${rotulo}: ${valor}`;
+          detalhes.appendChild(linha);
+        });
+
+        const aviso = document.createElement("p");
+        aviso.textContent = "Apresente esta senha na chegada.";
+
+        msg.appendChild(titulo);
+        msg.appendChild(detalhes);
+        msg.appendChild(aviso);
+
       } else if (res.status === "cheio") {
-        msg.innerHTML = `
-          ❌ <strong>As senhas de hoje já se encerraram.</strong><br>
-          Agradecemos a compreensão.
-        `;
-      } else if (res.status === "ja_usado") {
-        msg.innerHTML = "⚠️ Este CPF já retirou uma senha hoje.";
+        msg.textContent =
+          "As senhas de hoje já se encerraram. Agradecemos a compreensão.";
+
       } else if (res.status === "erro") {
-        msg.innerHTML = "❌ " + (res.mensagem || "Erro ao gerar senha.");
+        msg.textContent =
+          res.mensagem || "Erro ao gerar senha.";
+
       } else {
-        msg.innerHTML = "❌ Não foi possível gerar a senha.";
+        msg.textContent =
+          "Não foi possível gerar a senha.";
       }
     })
-    .catch(() => {
-      msg.innerHTML = "❌ Erro de conexão. Tente novamente.";
+    .catch(error => {
+      console.error("Erro ao gerar senha:", error);
+
+      msg.textContent =
+        "Erro de conexão. Confira se a senha foi registrada antes de tentar novamente.";
+    })
+    .finally(() => {
+      enviando = false;
+      botoes.forEach(botao => botao.disabled = false);
     });
 }
 </script>
+
 </body>
 </html>
